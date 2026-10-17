@@ -67,7 +67,7 @@ mkdir -p ~/Code && cd ~/Code
 git clone https://github.com/groenewege/dotfiles-mac.git
 git clone https://github.com/groenewege/dotfiles-ai.git
 dotfiles-mac/install.sh
-dotfiles-ai/plugins.sh
+dotfiles-ai/plugins.sh   # also adds Notion to Codex: approve the login in the browser
 ```
 
 Then copy `templates/claude-settings.json` to `~/.claude/settings.json` and add
