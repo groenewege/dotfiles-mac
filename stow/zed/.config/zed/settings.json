@@ -1,0 +1,86 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "proxy": "",
+  "title_bar": {
+    "show_onboarding_banner": true,
+    "show_project_items": true,
+    "show_worktree_name": false,
+    "show_branch_status_icon": false
+  },
+  "status_bar": {
+    "show_active_file": false
+  },
+  "diagnostics": {
+    "button": false
+  },
+  "diff_view_style": "split",
+  "agent": {
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5.4",
+      "enable_thinking": true,
+      "effort": "medium"
+    },
+    "favorite_models": [],
+    "default_profile": "ask",
+    "model_parameters": []
+  },
+  "languages": {
+    "PHP": {
+      "language_servers": ["laravel-lsp", "!intelephense", "!phpactor", "!phptools", "..."],
+      "show_completions_on_input": true,
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "vendor/bin/pint",
+          "arguments": ["--stdin-filename", "{buffer_path}"]
+        }
+      }
+    }
+  },
+  "tab_bar": {
+    "show_tab_bar_buttons": false,
+    "show_nav_history_buttons": false
+  },
+  "tabs": {
+    "git_status": false,
+    "file_icons": false
+  },
+  "collaboration_panel": {
+    "button": false
+  },
+  "debugger": {
+    "button": false
+  },
+  "git": {
+    "inline_blame": {
+      "enabled": false
+    }
+  },
+  "project_panel": {
+    "default_width": 240.0,
+    "file_icons": true,
+    "dock": "right",
+    "button": true
+  },
+  "buffer_line_height": "comfortable",
+  "buffer_font_family": "JetBrains Mono",
+  "agent_servers": {
+    "codex-acp": {
+      "type": "registry"
+    },
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": "Gruvbox Dark",
+}

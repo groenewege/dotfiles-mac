@@ -1,0 +1,20 @@
+# Included at the end of ~/.gitconfig (see install.sh), so these settings win.
+# ~/.gitconfig keeps what is specific to this machine (gh credential helper).
+#
+# Unlike dotfiles-omarchy: no delta pager and no SSH commit signing, since
+# neither is set up on this Mac.
+
+[user]
+	name = Gunther Groenewege
+	email = gunther@groenewege.com
+
+[core]
+	excludesfile = ~/.config/git/ignore
+
+[init]
+	defaultBranch = main
+
+[alias]
+	lg = log --oneline --decorate --graph
+	unstage = reset HEAD --
+	amend = commit --amend --no-edit

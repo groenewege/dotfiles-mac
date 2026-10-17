@@ -1,0 +1,242 @@
+#!/bin/zsh
+
+set -e
+
+# ------------------------------------------------------------
+# Laravel Project Launcher
+#
+# Usage:
+#   workon                    Current directory
+#   workon my-project         ~/Sites/my-project
+#   workon /path/to/project   Explicit path
+# ------------------------------------------------------------
+
+SITES_DIR="$HOME/Sites"
+
+# ------------------------------------------------------------
+# Resolve project directory
+# ------------------------------------------------------------
+
+if [[ -z "$1" ]]; then
+    # No argument: use current directory
+    PROJECT_DIR="$PWD"
+elif [[ "$1" == /* ]]; then
+    # Absolute path
+    PROJECT_DIR="$1"
+elif [[ "$1" == ~* ]]; then
+    # Path starting with ~
+    PROJECT_DIR="${1/#\~/$HOME}"
+else
+    # Project name: assume ~/Sites
+    PROJECT_DIR="$SITES_DIR/$1"
+fi
+
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo "❌ Project directory does not exist:"
+    echo "   $PROJECT_DIR"
+    exit 1
+fi
+
+PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
+ENV_FILE="$PROJECT_DIR/.env"
+
+# ------------------------------------------------------------
+# Validation
+# ------------------------------------------------------------
+
+if [[ ! -f "$PROJECT_DIR/artisan" ]]; then
+    echo "❌ Not a Laravel project:"
+    echo "   $PROJECT_DIR"
+    exit 1
+fi
+
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "❌ No .env file found:"
+    echo "   $ENV_FILE"
+    exit 1
+fi
+
+# ------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------
+
+env_value() {
+    local value
+
+    value=$(grep -E "^${1}=" "$ENV_FILE" | tail -1 | cut -d '=' -f2-)
+
+    # Remove surrounding single or double quotes
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+
+    echo "$value"
+}
+
+# ------------------------------------------------------------
+# Project configuration
+# ------------------------------------------------------------
+
+PROJECT_NAME="$(basename "$PROJECT_DIR")"
+
+APP_URL="$(env_value APP_URL)"
+
+DB_CONNECTION="$(env_value DB_CONNECTION)"
+DB_HOST="$(env_value DB_HOST)"
+DB_PORT="$(env_value DB_PORT)"
+DB_DATABASE="$(env_value DB_DATABASE)"
+DB_USERNAME="$(env_value DB_USERNAME)"
+DB_PASSWORD="$(env_value DB_PASSWORD)"
+
+# Sensible Laravel/MySQL defaults
+DB_HOST="${DB_HOST:-127.0.0.1}"
+DB_PORT="${DB_PORT:-3306}"
+
+# ------------------------------------------------------------
+# Summary
+# ------------------------------------------------------------
+
+echo ""
+echo "🚀 Opening $PROJECT_NAME"
+echo ""
+echo "   Directory: $PROJECT_DIR"
+echo "   URL:       ${APP_URL:-not configured}"
+echo "   Database:  ${DB_DATABASE:-not configured}"
+echo ""
+
+# ------------------------------------------------------------
+# Zed
+# ------------------------------------------------------------
+
+echo "→ Zed"
+
+zed -n "$PROJECT_DIR"
+
+# ------------------------------------------------------------
+# Tower
+# ------------------------------------------------------------
+
+echo "→ Tower"
+
+gittower "$PROJECT_DIR"
+
+# ------------------------------------------------------------
+# Chrome
+# ------------------------------------------------------------
+
+if [[ -n "$APP_URL" ]]; then
+    echo "→ Chrome"
+
+    open -a "Google Chrome" "$APP_URL"
+else
+    echo "⚠️  Skipping Chrome: APP_URL is not configured"
+fi
+
+# ------------------------------------------------------------
+# TablePlus
+# ------------------------------------------------------------
+
+if [[ "$DB_CONNECTION" == "mysql" && -n "$DB_DATABASE" ]]; then
+    echo "→ TablePlus"
+
+    DB_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
+
+    open -a "TablePlus" "$DB_URL"
+else
+    echo "⚠️  Skipping TablePlus: MySQL database is not configured"
+fi
+
+# ------------------------------------------------------------
+# Ghostty / Herdr
+# ------------------------------------------------------------
+
+HERDR="$HOME/.local/bin/herdr"
+HERDR_PLUS="$HOME/.local/bin/herdr-plus"
+HERDR_SOCKET="$HOME/.config/herdr/herdr.sock"
+
+HERDR_PLUS_PROJECT_DIR="$HOME/.config/herdr/plugins/config/cloudmanic.herdr-plus/projects"
+HERDR_PLUS_PROJECT="$HERDR_PLUS_PROJECT_DIR/$PROJECT_NAME.toml"
+
+echo "→ Ghostty / Herdr"
+
+# ------------------------------------------------------------
+# Check whether a Herdr CLIENT is currently attached
+#
+# The server can remain running after Ctrl+B, Q, so checking
+# the socket/server alone isn't sufficient.
+# ------------------------------------------------------------
+
+CLIENT_STATUS="$("$HERDR" status client 2>/dev/null || true)"
+
+if echo "$CLIENT_STATUS" | grep -qiE '"connected"[[:space:]]*:[[:space:]]*true|attached'; then
+
+    echo "   Herdr client already attached"
+
+else
+
+    echo "   Herdr server may be running, but no client is attached"
+    echo "   Opening Herdr in Ghostty..."
+
+    osascript <<EOF
+tell application "Ghostty"
+    activate
+
+    set cfg to new surface configuration
+    set initial working directory of cfg to "$PROJECT_DIR"
+    set command of cfg to "$HERDR"
+
+    new window with configuration cfg
+end tell
+EOF
+
+    # Give the client a moment to attach.
+    sleep 0.5
+fi
+
+# ------------------------------------------------------------
+# Wait for the Herdr server/socket
+# ------------------------------------------------------------
+
+for i in {1..50}; do
+    if [[ -S "$HERDR_SOCKET" ]]; then
+        break
+    fi
+
+    sleep 0.1
+done
+
+if [[ ! -S "$HERDR_SOCKET" ]]; then
+    echo "❌ Herdr server did not become available"
+    exit 1
+fi
+
+# ------------------------------------------------------------
+# Open project
+# ------------------------------------------------------------
+
+if [[ -f "$HERDR_PLUS_PROJECT" ]]; then
+
+    echo "   Opening Herdr Plus project: $PROJECT_NAME"
+
+    HERDR_SOCKET_PATH="$HERDR_SOCKET" \
+        "$HERDR_PLUS" open "$PROJECT_NAME"
+
+else
+
+    echo "   No Herdr Plus project found"
+    echo "   Opening basic workspace: $PROJECT_NAME"
+
+    HERDR_SOCKET_PATH="$HERDR_SOCKET" \
+        "$HERDR" workspace create \
+            --cwd "$PROJECT_DIR" \
+            --label "$PROJECT_NAME" \
+            --focus
+fi
+
+# ------------------------------------------------------------
+# Done
+# ------------------------------------------------------------
+
+echo ""
+echo "✓ $PROJECT_NAME workspace opened."

@@ -1,0 +1,15 @@
+# ~/.ssh/config for a new Mac. This repo is public, so it holds no hosts.
+#
+# Keep the server list in ~/.ssh/config.d/hosts (private, never committed;
+# copy it from the old Mac or from the password manager). Every file in
+# ~/.ssh/config.d/ is loaded here. Same layout as dotfiles-omarchy.
+Include ~/.ssh/config.d/*
+
+Host omarchy
+	Hostname omarchy
+	User gunther
+
+Host *
+	AddKeysToAgent yes
+	UseKeychain yes
+	IdentitiesOnly yes
