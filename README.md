@@ -38,6 +38,7 @@ templates/               reference copies, not linked: .zshrc, Claude settings
                          (secrets removed), ssh config (no hosts)
 Brewfile                 what Homebrew had installed; a reference, never run here
 docs/new-mac.md          setting up a new Mac
+docs/cheatsheet.md       shortcuts and commands for daily use
 ```
 
 ### Two ways of managing a config file
@@ -63,5 +64,10 @@ docs/new-mac.md          setting up a new Mac
 | Change a skill or AGENTS.md | edit it in `~/.claude/skills/…` (it's dotfiles-ai), commit and push there |
 | Get skills from Omarchy | `git -C ~/Code/dotfiles-ai pull && ~/Code/dotfiles-ai/install.sh` |
 | Refresh the Brewfile | `HOMEBREW_NO_AUTO_UPDATE=1 brew bundle dump --file=Brewfile --force` (keep the header) |
+
+### Cheat sheet
+
+Aliases, functions and keyboard shortcuts (Ghostty, T3 Code, Zed, Claude Code,
+and the ones this repo adds) are in [docs/cheatsheet.md](docs/cheatsheet.md).
 
 This repo is public: client names, server hosts and tokens stay out of it.
