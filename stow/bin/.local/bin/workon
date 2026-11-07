@@ -148,90 +148,41 @@ else
 fi
 
 # ------------------------------------------------------------
-# Ghostty / Herdr
-# ------------------------------------------------------------
-
-HERDR="$HOME/.local/bin/herdr"
-HERDR_PLUS="$HOME/.local/bin/herdr-plus"
-HERDR_SOCKET="$HOME/.config/herdr/herdr.sock"
-
-HERDR_PLUS_PROJECT_DIR="$HOME/.config/herdr/plugins/config/cloudmanic.herdr-plus/projects"
-HERDR_PLUS_PROJECT="$HERDR_PLUS_PROJECT_DIR/$PROJECT_NAME.toml"
-
-echo "→ Ghostty / Herdr"
-
-# ------------------------------------------------------------
-# Check whether a Herdr CLIENT is currently attached
+# T3 Code
 #
-# The server can remain running after Ctrl+B, Q, so checking
-# the socket/server alone isn't sufficient.
+# `t3 app` opens the project in the running desktop app (and
+# adds it there if it's new). It fails when the app isn't
+# running, so launch the app and retry until it answers.
 # ------------------------------------------------------------
 
-CLIENT_STATUS="$("$HERDR" status client 2>/dev/null || true)"
+T3="$HOME/.t3/bin/t3"
+T3_BUNDLE_ID="com.t3tools.t3code"
 
-if echo "$CLIENT_STATUS" | grep -qiE '"connected"[[:space:]]*:[[:space:]]*true|attached'; then
+echo "→ T3 Code"
 
-    echo "   Herdr client already attached"
-
+if [[ ! -x "$T3" ]]; then
+    echo "⚠️  Skipping T3 Code: $T3 not found (open the app once to install it)"
+elif "$T3" app "$PROJECT_DIR" >/dev/null 2>&1; then
+    open -b "$T3_BUNDLE_ID"
 else
+    echo "   Starting T3 Code..."
 
-    echo "   Herdr server may be running, but no client is attached"
-    echo "   Opening Herdr in Ghostty..."
+    open -b "$T3_BUNDLE_ID"
 
-    osascript <<EOF
-tell application "Ghostty"
-    activate
+    T3_OPENED=0
 
-    set cfg to new surface configuration
-    set initial working directory of cfg to "$PROJECT_DIR"
-    set command of cfg to "$HERDR"
+    for i in {1..60}; do
+        sleep 0.5
 
-    new window with configuration cfg
-end tell
-EOF
+        if "$T3" app "$PROJECT_DIR" >/dev/null 2>&1; then
+            T3_OPENED=1
+            break
+        fi
+    done
 
-    # Give the client a moment to attach.
-    sleep 0.5
-fi
-
-# ------------------------------------------------------------
-# Wait for the Herdr server/socket
-# ------------------------------------------------------------
-
-for i in {1..50}; do
-    if [[ -S "$HERDR_SOCKET" ]]; then
-        break
+    if (( ! T3_OPENED )); then
+        echo "⚠️  T3 Code did not respond; open $PROJECT_NAME there by hand"
     fi
-
-    sleep 0.1
-done
-
-if [[ ! -S "$HERDR_SOCKET" ]]; then
-    echo "❌ Herdr server did not become available"
-    exit 1
-fi
-
-# ------------------------------------------------------------
-# Open project
-# ------------------------------------------------------------
-
-if [[ -f "$HERDR_PLUS_PROJECT" ]]; then
-
-    echo "   Opening Herdr Plus project: $PROJECT_NAME"
-
-    HERDR_SOCKET_PATH="$HERDR_SOCKET" \
-        "$HERDR_PLUS" open "$PROJECT_NAME"
-
-else
-
-    echo "   No Herdr Plus project found"
-    echo "   Opening basic workspace: $PROJECT_NAME"
-
-    HERDR_SOCKET_PATH="$HERDR_SOCKET" \
-        "$HERDR" workspace create \
-            --cwd "$PROJECT_DIR" \
-            --label "$PROJECT_NAME" \
-            --focus
 fi
 
 # ------------------------------------------------------------
@@ -239,4 +190,4 @@ fi
 # ------------------------------------------------------------
 
 echo ""
-echo "✓ $PROJECT_NAME workspace opened."
+echo "✓ $PROJECT_NAME opened."
