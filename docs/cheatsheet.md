@@ -35,6 +35,7 @@ Everything this repo adds or changes, in one place.
 `workon` ★ opens a Laravel project in every app at once: Zed, Tower, the site
 in Chrome (`APP_URL`), the database in TablePlus, and the project in T3 Code
 (it starts T3 Code if needed). It reads `.env` for the URL and database.
+`open-project` is an alias for it.
 
 | | |
 |---|---|
@@ -190,6 +191,6 @@ Added by this repo (see `stow/zsh/.config/zsh/`). The PHP commands go through
 | Git | `commit [msg]` (no message: Claude writes one), `gll`, `nah`, `uncommit`, `push`, `pull`, `gpo`, `git-prune-local`, `clone owner/repo` |
 | Databases | `db create\|drop\|refresh\|list <name>` (local MySQL), `opendb` (the project's database in TablePlus) |
 | AI | `c` (claude), `ccc` (claude --continue), `cxy` (codex without approvals) |
-| Projects | `workon [project]`, `dotfiles` (cd here), Ctrl+G (fuzzy cd) |
+| Projects | `workon [project]` (alias `open-project`), `dotfiles` (cd here), Ctrl+G (fuzzy cd) |
 | Symfony 1 | `sfcc`, `sfreload`, `sfmigrate` (the legacy DES apps) |
 | Other | `ll`, `phpserve` (`php -S` on port 8888), `sshkey` (copy the public key) |

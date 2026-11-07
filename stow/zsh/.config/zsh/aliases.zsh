@@ -47,5 +47,8 @@ alias nah="git reset --hard; git clean -df"
 # SSH
 alias sshkey="pbcopy < ~/.ssh/id_rsa.pub && echo 'Public key copied to clipboard.'"
 
+# Projects
+alias open-project="workon"
+
 # Dotfiles
 alias dotfiles='cd "$DOTFILES"'
